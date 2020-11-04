@@ -1,0 +1,28 @@
+name: continuous integration
+
+on: [push, pull_request]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - run: composer install
+      - run: composer cscheck
+      - run: composer phpstan
+      - run: composer test
